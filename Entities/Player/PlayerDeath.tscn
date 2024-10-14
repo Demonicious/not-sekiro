@@ -1,0 +1,89 @@
+[gd_scene load_steps=14 format=3 uid="uid://chsa3dhb55ytl"]
+
+[ext_resource type="Texture2D" uid="uid://nq2qygce80i2" path="res://Assets/Character/Color-1/Death.png" id="1_2r1k5"]
+[ext_resource type="Script" path="res://Entities/Player/player_death.gd" id="2_o6mye"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c4sj5"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(0, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3ij5o"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(120, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kh6bn"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(240, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_sfpic"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(360, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1wepk"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(480, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kxvhy"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(600, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8f04b"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(720, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wtont"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(840, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7tx0u"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(960, 0, 120, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3muma"]
+atlas = ExtResource("1_2r1k5")
+region = Rect2(1080, 0, 120, 80)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_6utu0"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c4sj5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3ij5o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kh6bn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_sfpic")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1wepk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kxvhy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8f04b")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wtont")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7tx0u")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3muma")
+}],
+"loop": false,
+"name": &"death",
+"speed": 16.0
+}]
+
+[node name="PlayerDeath" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_6utu0")
+animation = &"death"
+frame = 9
+frame_progress = 1.0
+script = ExtResource("2_o6mye")

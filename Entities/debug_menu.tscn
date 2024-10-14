@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3 uid="uid://djcg6be772v60"]
+
+[ext_resource type="Script" path="res://Scenes/DebugMenu.cs" id="1_58iu7"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_d7g1m"]
+font_size = 12
+
+[node name="DebugMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -240.0
+offset_top = -136.0
+offset_right = -200.0
+offset_bottom = -96.0
+script = ExtResource("1_58iu7")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 368.0
+offset_top = 16.0
+offset_right = 464.0
+offset_bottom = 64.0
+color = Color(0.258824, 0.52549, 0.294118, 0.596078)
+
+[node name="Framerate" type="Label" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 376.0
+offset_top = 24.0
+offset_right = 424.0
+offset_bottom = 47.0
+text = "FPS: 000"
+label_settings = SubResource("LabelSettings_d7g1m")
+
+[node name="Frametime" type="Label" parent="."]
+layout_mode = 0
+offset_left = 376.0
+offset_top = 39.0
+offset_right = 421.0
+offset_bottom = 62.0
+text = "0.00 MS"
+label_settings = SubResource("LabelSettings_d7g1m")

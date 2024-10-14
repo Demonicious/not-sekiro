@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://boyuypxsjcewx"]
+
+[ext_resource type="Script" path="res://Entities/UI/AnimatedProgressBar.cs" id="1_w5ngd"]
+[ext_resource type="Texture2D" uid="uid://chtsorcllatd7" path="res://Assets/HUD/Bars/base.png" id="2_keqlp"]
+[ext_resource type="Texture2D" uid="uid://tpifdfndl2ts" path="res://Assets/HUD/Bars/yellow.png" id="3_pwsru"]
+[ext_resource type="Texture2D" uid="uid://d30xhu778m0de" path="res://Assets/HUD/Bars/red.png" id="4_w6fph"]
+
+[node name="AnimatedBar" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_w5ngd")
+
+[node name="Shadow" type="TextureProgressBar" parent="."]
+layout_mode = 0
+offset_right = 58.0
+offset_bottom = 4.0
+value = 100.0
+texture_under = ExtResource("2_keqlp")
+texture_progress = ExtResource("3_pwsru")
+texture_progress_offset = Vector2(1, 1)
+
+[node name="Primary" type="TextureProgressBar" parent="."]
+layout_mode = 0
+offset_right = 58.0
+offset_bottom = 4.0
+value = 100.0
+texture_under = ExtResource("2_keqlp")
+texture_progress = ExtResource("4_w6fph")
+texture_progress_offset = Vector2(1, 1)
+
+[node name="Timer" type="Timer" parent="."]
