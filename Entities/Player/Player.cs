@@ -19,6 +19,8 @@ public partial class Player : CharacterBody2D
 	public float GuardDamage = 0.45f;	
 	[Export]
 	public float GuardPushback = 0.25f;
+	[Export]
+	public float HurtPostureDamage = 0.5f;
 
 	[ExportGroup("Posture System")]
 	[Export]
@@ -39,6 +41,8 @@ public partial class Player : CharacterBody2D
 	public float GuardRegenBuff = 0.5f;
 	[Export(PropertyHint.None, "Time to wait before regenerating posture after an attack.")]
 	public float AttackRegenDelay = 1.5f;
+	[Export]
+	public float StaggerDuration = 2.5f;
 
 	[ExportGroup("Behavior")]
 	[Export]
@@ -53,8 +57,8 @@ public partial class Player : CharacterBody2D
 	Area2D guardbox;
 	Area2D hurtbox;
 
-	Node2D vfx_hit_location;
-	PackedScene vfx_hit;
+	Node2D vfx_death_location;
+	PackedScene vfx_death;
 
 	// Death Scene
 	PackedScene scene_death;
@@ -64,15 +68,20 @@ public partial class Player : CharacterBody2D
 
 	AudioStreamPlayer2D sfx_footsteps;
 	AudioStreamPlayer2D sfx_guard_up;
-	AudioStreamPlayer2D sfx_block;
+	OverlappingAudio sfx_block;
 	OverlappingAudio sfx_parry;
+	OverlappingAudio sfx_hurt;
+	OverlappingAudio sfx_stagger;
+	OverlappingAudio sfx_death;
 
 	AnimatedProgressBar hud_hp;
 	TextureProgressBar hud_posture;
 	TextureProgressBar hud_parry_timing;
 
 	Timer postureRegenDelayTimer;
+	Timer staggerDuration;
 
+	bool staggered = false;
 	bool can_regenerate_posture = true;
 	int guard_frames = 0;
 
@@ -89,8 +98,8 @@ public partial class Player : CharacterBody2D
 		hurtbox = GetNode<Area2D>("Pivot/Hurtbox");
 
 		// Effects and their Spawn Points
-		vfx_hit_location = GetNode<Node2D>("Pivot/EffectLocations/Hit");
-		vfx_hit = ResourceLoader.Load<PackedScene>("res://Entities/Player/HitEffect.tscn");
+		vfx_death_location = GetNode<Node2D>("Pivot/EffectLocations/Death");
+		vfx_death = ResourceLoader.Load<PackedScene>("res://Entities/Player/HitEffect.tscn");
 
 		// Death Scene
 		scene_death = ResourceLoader.Load<PackedScene>("res://Entities/Player/PlayerDeath.tscn");
@@ -102,10 +111,12 @@ public partial class Player : CharacterBody2D
 		// SFX Nodes
 		sfx_footsteps = GetNode<AudioStreamPlayer2D>("Audio/Footsteps");
 		sfx_guard_up = GetNode<AudioStreamPlayer2D>("Audio/Guardup");
-		sfx_block = GetNode<AudioStreamPlayer2D>("Audio/Block");
+		sfx_block = GetNode<OverlappingAudio>("Audio/Block");
 		sfx_parry = GetNode<OverlappingAudio>("Audio/Parry");
 
+		// Timers
 		postureRegenDelayTimer = GetNode<Timer>("PostureRegenDelay");
+		staggerDuration = GetNode<Timer>("StaggerDuration");
 
 		// HUD Nodes
 		hud_hp = GetNode<AnimatedProgressBar>("HUD/HP");
@@ -126,6 +137,10 @@ public partial class Player : CharacterBody2D
 		// Initialize Posture Regen Delay after Attack timer; Connect Signal to ensure posture regeneration is allowed after timeout.
 		postureRegenDelayTimer.WaitTime = AttackRegenDelay;
 		postureRegenDelayTimer.Connect("timeout", Callable.From(() => can_regenerate_posture = true));
+
+		// Initialize Stagger Duration timer; Connect Signal to give back control.
+		staggerDuration.WaitTime = StaggerDuration;
+		staggerDuration.Connect("timeout", Callable.From(() => ResetStagger()));
 
 		// Hurtbox and Guardbox Signals
 		hurtbox.AreaEntered += (Area2D area) => HandleHurtboxInteraction(area);
@@ -172,7 +187,7 @@ public partial class Player : CharacterBody2D
 		// Get the movement direction by subtracting the opposite axis. 1 = Right. -1 = Left. 0 = Idle. In-between values exist for smaller motion.
 		float direction = Input.GetActionStrength("move_right") - Input.GetActionStrength("move_left");
 
-		if(direction != 0 && HitboxesDisabled() && !IsGuarding() && !IsHurt() && !IsRolling() && !dead) {
+		if(direction != 0 && CanMove()) {
 			// Flip the Sprite based on Facing Direction
 			pivot.Scale = new Vector2(direction >= 0 ? 1 : -1, 1);
 
@@ -183,7 +198,7 @@ public partial class Player : CharacterBody2D
 		}
 
 		// Only play movement animations if Attack animations are not playing.
-		if(!IsAttacking()) {
+		if(!IsAttacking() && !staggered) {
 			// Play running animation if inputs are held down. Else play Idle animation. Also change the speed of the animation depending on axis.
 			if(direction != 0) {
 				SetRunSpeedScale(Mathf.Abs(direction) * RunSpeedScale);
@@ -217,13 +232,13 @@ public partial class Player : CharacterBody2D
 	// Controls the Guarding State. Responsible for activating and deactivating the guard animation and state.
 	private void Guarding() {
 		// Activate Guarding Hitbox and Start counting frames when initially started guarding.
-		if(Input.IsActionPressed("action_guard") && !IsAttacking()) {
+		if(Input.IsActionPressed("action_guard") && !IsAttacking() && !staggered) {
 			guardbox.Monitoring = true;
 			animationState.Travel("Guard");
 
 			// Just started guarding;
 			if(guard_frames == 0) {
-				sfx_guard_up.PitchScale = GD.Randf() % 1.05f + 0.95f;
+				sfx_guard_up.PitchScale = GD.Randf() % 1.1f + 0.9f;
 				sfx_guard_up.Play();
 			}
 
@@ -253,14 +268,9 @@ public partial class Player : CharacterBody2D
 			animationState.Travel("Roll");
 		}
 
-		// 
+		// Move Automatically if Rolling.
 		if(IsRolling()) {
-			// Create a copy of the global Velocity vector.
-			Vector2 velocity = Velocity;
-			// Lerp Velocity using the MotionLerpWeight and Delta. This will smoothly increase / decrease the velocity and imitate acceleration without actually using acceleration.
-			velocity.X = Mathf.Lerp(velocity.X, RollSpeed * pivot.Scale.X, MotionLerpWeight * (float)delta);
-			Velocity = velocity;
-			MoveAndSlide();
+			AutomaticMovement(RollSpeed, delta);
 		}
 	}
 
@@ -281,26 +291,48 @@ public partial class Player : CharacterBody2D
 			Posture -= (float)regenPerTick;
 		}
 
-		if(Posture >= MaxPosture) {
-			// Break Stance.
-			// Activate Timer.
-			// Reset Posture to 0 after Timer is Up.
+		// Stagger if Posture is at it's limit. Make sure condition is only matched once.
+		if(Posture >= MaxPosture && !staggered) {
+			Stagger();
 		}
 
 		hud_posture.Value = Posture;
+	}
+
+	// Reste Posture, Set Flag and Start animation and timers.
+	private void Stagger() {
+		Posture = 0; 
+
+		staggered = true;
+		animationState.Start("Stagger"); // Force the animationtree to play the Stagger animation no matter what.
+		staggerDuration.Start(); // Stagger Duration Timer. Control is given back on timeout.
+	}
+
+	private void ResetStagger() {
+		staggered = false;
+		can_regenerate_posture = true;
+
+		if(!dead)
+			animationState.Travel("Idle");
 	}
 
 	private void HandleHurtboxInteraction(Area2D area) {
 		if(area is not Hitbox)
 			return;
 
+		if(!staggered) {
+			Posture += (float)area.Get("posture_damage") * HurtPostureDamage;
+			if(Posture >= MaxPosture)
+				Posture = MaxPosture;
+			
+			if(!staggered)
+				animationState.Travel("Hurt");
+		}
+
 		var damage = (int)area.Get("damage");
-
-		animationState.Travel("Hurt");
-
-		ApplyPushback((float)area.Get("pushback"));
-
 		SetHP(HP - damage);
+		
+		ApplyPushback((float)area.Get("pushback"));
 
 		// Todo;
 		// 1. Hurt Animation
@@ -314,51 +346,56 @@ public partial class Player : CharacterBody2D
 		if(area is not Hitbox)
 			return;
 
-		var damage = (float)area.Get("damage") * GuardDamage;
-
+		// Prevent Posture Regenration if Just Blocked.
 		can_regenerate_posture = false;
 		postureRegenDelayTimer.Start();
 
 		// Check if it is a Parry or a Block.
-		if(guard_frames <= ParryFrames) {
-			// Add Posture but Prevent Stagger
-			Posture += (float)area.Get("posture_damage") * ParryPostureDamage;
-			if(Posture >= MaxPosture)
-				Posture = MaxPosture - 1;
+		if(guard_frames <= ParryFrames) { // In case of a Parry
+			// Add Posture but Prevent Stagger and play animation.
+			if(!staggered) {
+				Posture += (float)area.Get("posture_damage") * ParryPostureDamage;
+				if(Posture >= MaxPosture)
+					Posture = MaxPosture - 1;
 
+				// Parry Animation
+				animationState.Travel("Parry");
+			}
+
+			// Pushback with Parry Modifier
 			ApplyPushback((float)area.Get("pushback") * ParryPushback);
 
-			animationState.Travel("Parry");
+			// Sound
+			sfx_parry.PitchScale = GD.Randf() % 1.02f + 0.98f;
+			sfx_parry.OverlappingPlay();
 
-			// Todo;
-			// 1. Parry Sound
-			// 2. Parry Particles
-			// 3. Add Posture but Prevent Stagger
-
-		} else {
-			// Add posture.
-			Posture += (float)area.Get("posture_damage") * ParryPostureDamage;
-
-			ApplyPushback((float)area.Get("pushback") * GuardPushback);
-
+		} else { // In case of a Block
+		
 			// Reduce HP but prevent death.
+			var damage = (float)area.Get("damage") * GuardDamage;
 			var new_hp = HP - (int)Mathf.Round(damage);
+
 			if(new_hp < 0)
 				SetHP(1);
 			else
 				SetHP(new_hp);
-			
-			// Spawn Hit Effect.
-			// SimpleEffect effect = vfx_hit.Instantiate<SimpleEffect>();
-			// effect.Position = vfx_hit_location.Position;
-			// AddChild(effect);
 
-			animationState.Travel("Block");
+			// Add posture if not staggered and play animation.
+			if(!staggered) {
+				Posture += (float)area.Get("posture_damage") * ParryPostureDamage;
+				if(Posture >= MaxPosture)
+					Posture = MaxPosture;
+				
+				// Block Animation
+				animationState.Travel("Block");
+			}
 
-			// Todo;
-			// 1. Block Sound
-			// 2. Block Particles
-			// 3. Add Posture
+			// Pushback with Guard Modifier
+			ApplyPushback((float)area.Get("pushback") * GuardPushback);
+		
+			// Play Sound
+			sfx_block.PitchScale = GD.Randf() % 1.1f + 0.9f;
+			sfx_block.OverlappingPlay();
 		}
 	}
 
@@ -367,6 +404,15 @@ public partial class Player : CharacterBody2D
 		Vector2 velocity = Vector2.Zero;
 		// Lerp Velocity using the MotionLerpWeight and Delta. This will smoothly increase / decrease the velocity and imitate acceleration without actually using acceleration.
 		velocity.X = Mathf.Lerp(velocity.X,  -pivot.Scale.X * pushback, MotionLerpWeight * (float)GetPhysicsProcessDeltaTime()); 
+		Velocity = velocity;
+		MoveAndSlide();
+	}
+
+	private void AutomaticMovement(float speed, double delta) {
+		// Create a copy of the global Velocity vector.
+		Vector2 velocity = Velocity;
+		// Lerp Velocity using the MotionLerpWeight and Delta. This will smoothly increase / decrease the velocity and imitate acceleration without actually using acceleration.
+		velocity.X = Mathf.Lerp(velocity.X, speed * pivot.Scale.X, MotionLerpWeight * (float)delta);
 		Velocity = velocity;
 		MoveAndSlide();
 	}
@@ -380,7 +426,11 @@ public partial class Player : CharacterBody2D
 
 		// Die
 		if(HP <= 0) {
+			// Set dead to true so other actions are prevented and this method is not called again.
 			dead = true;
+
+			// Create an instance of death_sprite at the position of current_sprite.
+			// Hide current_sprite and play the death_sprite.
 			Sprite2D current_sprite = pivot.GetNode<Sprite2D>("Sprite2D");
 			AnimatedSprite2D death_sprite = scene_death.Instantiate<AnimatedSprite2D>();
 
@@ -389,32 +439,33 @@ public partial class Player : CharacterBody2D
 			pivot.AddChild(death_sprite);
 			death_sprite.Play();
 
-			SimpleEffect effect = vfx_hit.Instantiate<SimpleEffect>();
-			effect.Position = vfx_hit_location.Position;
+			// Instantiate the death effect.
+			SimpleEffect effect = vfx_death.Instantiate<SimpleEffect>();
+			effect.Position = vfx_death_location.Position;
 			AddChild(effect);
 
 			await ToSignal(death_sprite, "animation_finished");
+
+			// Here you would load the death screen or whatever. But we're just restarting the scene.
 			GetTree().ReloadCurrentScene();
 			return;
 		}
 	}
 
-	// Check if Hitboxes are disabled.
-	bool HitboxesDisabled() {
+	// Check if Hitboxes are disabled. An alternative to checking if player is attacking or not.
+	// Helpful if you want to give-back control 1-2 frames earlier than the attack animation finishes.
+	bool HitboxDisabled() {
 		return !hitbox.Monitoring;
 	}
 
-	// Check if Guarding.
 	bool IsGuarding() {
 		return guardbox.Monitoring;
 	}
 
-	// Check if Attacking.
 	bool IsAttacking() {
-		return animationState.GetCurrentNode() == "Attack_1" || animationState.GetCurrentNode() == "Attack_2";
+		return animationState.GetCurrentNode().ToString().StartsWith("Attack");
 	}
 
-	// Check if the hurt animation is playing.
 	bool IsHurt() {
 		return animationState.GetCurrentNode() == "Hurt";
 	}
@@ -425,9 +476,14 @@ public partial class Player : CharacterBody2D
 
 	// Method to check whether a roll should be allowed or not.
 	bool CanRoll() {
-		return !IsHurt() && HitboxesDisabled() && !IsRolling() && !dead;
+		return !IsHurt() && HitboxDisabled() && !IsRolling() && !staggered && !dead;
 	}
 
+	// Method to check whether all the conditions for movement are met.
+	bool CanMove() {
+		return HitboxDisabled() && !IsGuarding() && !IsHurt() && !IsRolling() && !staggered && !dead;
+	}
+	
 	// Play footstep sound with a random pitch.
 	public void PlayFootstep() {
 		sfx_footsteps.PitchScale = GD.Randf() % 1.1f + 0.9f;
