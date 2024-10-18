@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bawc1gdin1b3y"
-path="res://.godot/imported/Hit-Alternative.png-1863757e6bf1634580bfa2ac385c0328.ctex"
+uid="uid://0r67fwh0ccdg"
+path="res://.godot/imported/Spritesheet.png-4c571835fefa812e1f85fed5e0caa8f8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Character/VFX/Hit-Alternative.png"
-dest_files=["res://.godot/imported/Hit-Alternative.png-1863757e6bf1634580bfa2ac385c0328.ctex"]
+source_file="res://Assets/Character/Sprites/Spritesheet.png"
+dest_files=["res://.godot/imported/Spritesheet.png-4c571835fefa812e1f85fed5e0caa8f8.ctex"]
 
 [params]
 

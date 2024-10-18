@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://chsa3dhb55ytl"]
 
-[ext_resource type="Texture2D" uid="uid://nq2qygce80i2" path="res://Assets/Character/Color-1/Death.png" id="1_2r1k5"]
-[ext_resource type="Script" path="res://Entities/Player/player_death.gd" id="2_o6mye"]
+[ext_resource type="Texture2D" uid="uid://nq2qygce80i2" path="res://Assets/Character/Sprites/Death.png" id="1_2r1k5"]
+[ext_resource type="Script" path="res://Game Objects/Player/player_death.gd" id="2_o6mye"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_c4sj5"]
 atlas = ExtResource("1_2r1k5")

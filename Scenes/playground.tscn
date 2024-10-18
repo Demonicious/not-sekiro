@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=4 uid="uid://d00kmwr7eoxgk"]
+[gd_scene load_steps=37 format=4 uid="uid://d00kmwr7eoxgk"]
 
 [ext_resource type="Script" path="res://Scenes/ParallaxScroll.cs" id="1_5ss6u"]
 [ext_resource type="TileSet" uid="uid://c4n20e7hroifg" path="res://Assets/Tiles/Tileset.tres" id="1_xk7h2"]
@@ -12,8 +12,9 @@
 [ext_resource type="Texture2D" uid="uid://cdrrsbg4sgbti" path="res://Assets/Tiles/Interior-01.png" id="6_4eit3"]
 [ext_resource type="Texture2D" uid="uid://dvkweni3iyxff" path="res://Assets/Tiles/Props-Rocks.png" id="7_gjxjl"]
 [ext_resource type="Texture2D" uid="uid://dwdv863upnn6v" path="res://Assets/Tiles/Tree-Assets.png" id="8_yd0ep"]
-[ext_resource type="PackedScene" uid="uid://e0l0tqa3lnrj" path="res://Entities/Player/Player.tscn" id="11_o1auw"]
-[ext_resource type="PackedScene" uid="uid://djcg6be772v60" path="res://Entities/debug_menu.tscn" id="14_a5oqo"]
+[ext_resource type="PackedScene" uid="uid://e0l0tqa3lnrj" path="res://Game Objects/Player/Player.tscn" id="11_o1auw"]
+[ext_resource type="PackedScene" uid="uid://nvpjlanvxum3" path="res://Game Objects/Enemy/Enemy.tscn" id="13_6dw8y"]
+[ext_resource type="PackedScene" uid="uid://djcg6be772v60" path="res://Game Objects/debug_menu.tscn" id="14_a5oqo"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ssafk"]
 texture = ExtResource("3_2owg2")
@@ -3832,6 +3833,9 @@ tile_map_data = PackedByteArray("AAALAAYAAAACABEAAAALAAcAAAACABIAAAALAAgAAAACABM
 tile_set = ExtResource("1_xk7h2")
 
 [node name="Middle" type="Node2D" parent="World"]
+
+[node name="Enemy" parent="World/Middle" instance=ExtResource("13_6dw8y")]
+position = Vector2(144, 64)
 
 [node name="Player" parent="World/Middle" instance=ExtResource("11_o1auw")]
 position = Vector2(-96, 64)

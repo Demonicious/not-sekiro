@@ -31,7 +31,7 @@ project/assembly_name="Not-Sekiro"
 
 folder_colors={
 "res://Assets/": "green",
-"res://Entities/": "pink",
+"res://Game Objects/": "pink",
 "res://Scenes/": "blue"
 }
 

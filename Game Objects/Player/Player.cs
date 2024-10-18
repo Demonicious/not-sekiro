@@ -1,32 +1,35 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 public partial class Player : CharacterBody2D
 {
 	[ExportGroup("Basic Stats")]
 	[Export]
-	public int MaxHP = 1000;
+	public int MaxHP = 750;
 	[Export]
-	public int HP = 500;
+	public int HP = 750;
 	[Export] // Amount of Parry Frames
-	public int ParryFrames = 8;
+	public int ParryFrames = 16;
 	[Export] // Default Attack Animation Speed.
 	public float AttackSpeedScale = 1.0f;
 	[Export] // Default Running Animation Speed.
 	public float RunSpeedScale = 1.0f;
 	[Export]
-	public float GuardDamage = 0.45f;	
+	public float GuardDamage = 0.45f; // Guard Damage receiving Modifier
 	[Export]
-	public float GuardPushback = 0.25f;
+	public float GuardPushback = 0.25f; // Guard Pushback receiving Modifier
 	[Export]
-	public float HurtPostureDamage = 0.5f;
+	public float HurtPostureDamage = 0.5f; // Posture damage receiving Modifier on Hurt. To take less posture damage when hit.
+	[Export]
+	public float CriticalDamage = 1.25f; // Critical Damage receiving modifier (During stagger)
 
 	[ExportGroup("Posture System")]
 	[Export]
 	public int MaxPosture = 125;
 	[Export]
-	public float Posture = 124;
+	public float Posture = 0;
 	[Export]
 	public float ParryPostureDamage = 0.75f;
 	[Export]
@@ -52,43 +55,51 @@ public partial class Player : CharacterBody2D
 	[Export]
 	public float MotionLerpWeight = 12.0f;
 
-	Node2D pivot;
-	Hitbox hitbox;
-	Area2D guardbox;
-	Area2D hurtbox;
+	protected Node2D pivot;
+	protected Hitbox hitbox;
+	protected Area2D guardbox;
+	protected Area2D hurtbox;
 
-	Node2D vfx_death_location;
-	PackedScene vfx_death;
+	protected Node2D vfx_death_location;
+	protected PackedScene vfx_death;
+
+	protected Node2D vfx_parry_location;
+	protected PackedScene vfx_parry;
+
+	protected Node2D vfx_crit_location;
+	protected PackedScene vfx_crit;
 
 	// Death Scene
-	PackedScene scene_death;
+	protected PackedScene scene_death;
 
-	AnimationTree animationTree;
-	AnimationNodeStateMachinePlayback animationState;
+	protected AnimationTree animationTree;
+	protected AnimationNodeStateMachinePlayback animationState;
 
-	AudioStreamPlayer2D sfx_footsteps;
-	AudioStreamPlayer2D sfx_guard_up;
-	OverlappingAudio sfx_block;
-	OverlappingAudio sfx_parry;
-	OverlappingAudio sfx_hurt;
-	OverlappingAudio sfx_stagger;
-	OverlappingAudio sfx_death;
+	protected AudioStreamPlayer2D sfx_footsteps;
+	protected AudioStreamPlayer2D sfx_guard_up;
+	protected AudioStreamPlayer2D sfx_death;
+	protected OverlappingAudio sfx_block;
+	protected OverlappingAudio sfx_parry;
+	protected OverlappingAudio sfx_hurt;
+	protected OverlappingAudio sfx_stagger;
 
-	AnimatedProgressBar hud_hp;
-	TextureProgressBar hud_posture;
-	TextureProgressBar hud_parry_timing;
+	protected AnimatedProgressBar hud_hp;
+	protected TextureProgressBar hud_posture;
+	protected TextureProgressBar hud_parry_timing;
 
-	Timer postureRegenDelayTimer;
-	Timer staggerDuration;
+	protected Timer postureRegenDelayTimer;
+	protected Timer staggerDuration;
 
-	bool staggered = false;
-	bool can_regenerate_posture = true;
-	int guard_frames = 0;
+	protected bool staggered = false;
+	protected bool can_regenerate_posture = true;
+	protected int guard_frames = 0;
 
-	bool dead = false;
+	protected bool dead = false;
 
-    public override void _Ready()
-    {
+	protected List<Area2D> interacted = new List<Area2D>();
+
+	public override void _Ready()
+	{
 		// Get references to some nodes in the scene and set up defaults;
 
 		// Facing Direction and Hitboxes
@@ -99,20 +110,26 @@ public partial class Player : CharacterBody2D
 
 		// Effects and their Spawn Points
 		vfx_death_location = GetNode<Node2D>("Pivot/EffectLocations/Death");
-		vfx_death = ResourceLoader.Load<PackedScene>("res://Entities/Player/HitEffect.tscn");
+		vfx_parry_location = GetNode<Node2D>("Pivot/EffectLocations/Parry");
+		vfx_crit_location = GetNode<Node2D>("Pivot/EffectLocations/Critical");
+		vfx_death = ResourceLoader.Load<PackedScene>("res://Game Objects/Effects/DeathEffect.tscn");
+		vfx_parry = ResourceLoader.Load<PackedScene>("res://Game Objects/Effects/ParryEffect.tscn");
+		vfx_crit = ResourceLoader.Load<PackedScene>("res://Game Objects/Effects/CriticalEffect.tscn");
 
 		// Death Scene
-		scene_death = ResourceLoader.Load<PackedScene>("res://Entities/Player/PlayerDeath.tscn");
+		scene_death = ResourceLoader.Load<PackedScene>("res://Game Objects/Player/PlayerDeath.tscn");
 
 		// AnimationTree and State Machine
 		animationTree = GetNode<AnimationTree>("AnimationTree");
-        animationState = (AnimationNodeStateMachinePlayback)GetNode<AnimationTree>("AnimationTree").Get("parameters/playback");
+		animationState = (AnimationNodeStateMachinePlayback)GetNode<AnimationTree>("AnimationTree").Get("parameters/playback");
 
 		// SFX Nodes
 		sfx_footsteps = GetNode<AudioStreamPlayer2D>("Audio/Footsteps");
 		sfx_guard_up = GetNode<AudioStreamPlayer2D>("Audio/Guardup");
+		sfx_death = GetNode<AudioStreamPlayer2D>("Audio/Death");
 		sfx_block = GetNode<OverlappingAudio>("Audio/Block");
 		sfx_parry = GetNode<OverlappingAudio>("Audio/Parry");
+		sfx_hurt  = GetNode<OverlappingAudio>("Audio/Hurt");
 
 		// Timers
 		postureRegenDelayTimer = GetNode<Timer>("PostureRegenDelay");
@@ -149,13 +166,13 @@ public partial class Player : CharacterBody2D
 		// Reset Defaults;
 		ResetAnimationSpeedScale();
 		DeactivateHitbox();
-		guardbox.Monitoring = false;
-    }
+		DeactivateGuardbox();
+	}
 
 
 	// Physics process, Runs 60 ticks per second (Defined in Project settings). Ideal for physics calculations.
 	// Also ideal for Frame Based timing calculations as it runs at a constant tickrate and can be used as a timing scale.
-    public override void _PhysicsProcess(double delta)
+	public override void _PhysicsProcess(double delta)
 	{
 		Movement(delta);
 		PostureHandler(delta);
@@ -163,15 +180,17 @@ public partial class Player : CharacterBody2D
 		Guarding();
 		Rolling(delta);
 		SimulateStuff();
+
+		interacted.Clear();
 	}
 
-	private void SimulateStuff() {
+	protected virtual void SimulateStuff() {
 		if(Input.IsActionJustPressed("jump")) {
 			// Simulate a Hit;
-			// HandleHurtboxInteraction(hitbox);
+			HandleHurtboxInteraction(hitbox);
 			
 			// Simulate a Parry;
-			HandleGuardboxInteraction(hitbox);
+			// HandleGuardboxInteraction(hitbox);
 
 			// Simulate a Guard;
 			// guard_frames = ParryFrames + 1;
@@ -179,7 +198,7 @@ public partial class Player : CharacterBody2D
 		}
 	}
 
-	private void Movement(double delta)
+	protected virtual void Movement(double delta)
 	{
 		// Create a copy of the global Velocity vector.
 		Vector2 velocity = Velocity;
@@ -213,8 +232,8 @@ public partial class Player : CharacterBody2D
 	}
 
 	// Simple Combo System. Only allows Attack #2 to be used if Attack #1 is used beforehand. Should be easy to extend with more attacks.
-	private void Attacks() {
-		if(Input.IsActionJustPressed("action_attack")) {
+	protected virtual void Attacks() {
+		if(Input.IsActionJustPressed("action_attack") && CanAttack()) {
 			// Change the Speed of the Attacking Animation (depending on exported variable)
 			SetAttackSpeedScale();
 
@@ -230,10 +249,11 @@ public partial class Player : CharacterBody2D
 	}
 
 	// Controls the Guarding State. Responsible for activating and deactivating the guard animation and state.
-	private void Guarding() {
+	protected virtual void Guarding() {
 		// Activate Guarding Hitbox and Start counting frames when initially started guarding.
 		if(Input.IsActionPressed("action_guard") && !IsAttacking() && !staggered) {
-			guardbox.Monitoring = true;
+			ActivateGuardbox();
+			DeactivateHurtbox();
 			animationState.Travel("Guard");
 
 			// Just started guarding;
@@ -257,13 +277,14 @@ public partial class Player : CharacterBody2D
 		// Reset Guard Frames upon release and disable guard hitbox;
 		if(Input.IsActionJustReleased("action_guard")) {
 			guard_frames = 0;
-			guardbox.Monitoring = false;
+			DeactivateGuardbox();
+			ActivateHurtbox();
 			hud_parry_timing.Value = 0;
 		}
 	}
 
 	// Controls the Rolling State.
-	private void Rolling(double delta) {
+	protected virtual void Rolling(double delta) {
 		if(Input.IsActionJustPressed("action_roll") && CanRoll()) {
 			animationState.Travel("Roll");
 		}
@@ -275,7 +296,7 @@ public partial class Player : CharacterBody2D
 	}
 
 	// Controls the regeneration of posture. As-well as determines how fast or slow posture should generate depending on the current HP.
-	private void PostureHandler(double delta) {
+	protected void PostureHandler(double delta) {
 		// Regenerate posture if allowed.
 		if(can_regenerate_posture && Posture > 0) {
 			// Decrease posture steadily based on Current HP.
@@ -296,11 +317,19 @@ public partial class Player : CharacterBody2D
 			Stagger();
 		}
 
+		if(staggered) {
+			hud_parry_timing.MaxValue = staggerDuration.WaitTime * 100f;
+			hud_parry_timing.Value = (staggerDuration.WaitTime * 100f) - (staggerDuration.TimeLeft * 100);
+		} else {
+			hud_parry_timing.MaxValue = ParryFrames + 1;
+			hud_parry_timing.Value = guard_frames;
+		}
+
 		hud_posture.Value = Posture;
 	}
 
 	// Reste Posture, Set Flag and Start animation and timers.
-	private void Stagger() {
+	protected void Stagger() {
 		Posture = 0; 
 
 		staggered = true;
@@ -308,7 +337,7 @@ public partial class Player : CharacterBody2D
 		staggerDuration.Start(); // Stagger Duration Timer. Control is given back on timeout.
 	}
 
-	private void ResetStagger() {
+	protected void ResetStagger() {
 		staggered = false;
 		can_regenerate_posture = true;
 
@@ -316,35 +345,48 @@ public partial class Player : CharacterBody2D
 			animationState.Travel("Idle");
 	}
 
-	private void HandleHurtboxInteraction(Area2D area) {
-		if(area is not Hitbox)
+	protected void HandleHurtboxInteraction(Area2D area) {
+		if(area is not Hitbox || dead || interacted.Contains(area))
 			return;
 
+		interacted.Add(area);
+
+		// Prevent Posture Regeneration if Just Hit.
+		can_regenerate_posture = false;
+		postureRegenDelayTimer.Start();
+
+		// Add Posture and Play Animation
 		if(!staggered) {
 			Posture += (float)area.Get("posture_damage") * HurtPostureDamage;
 			if(Posture >= MaxPosture)
 				Posture = MaxPosture;
 			
-			if(!staggered)
-				animationState.Travel("Hurt");
-		}
+			animationState.Start("Hurt");
 
-		var damage = (int)area.Get("damage");
-		SetHP(HP - damage);
+			// Reduce HP
+			var damage = (int)area.Get("damage");
+			SetHP(HP - damage);
+		} else { 
+			// In case of a Critical Hit (Hit during Stagger), instantiate the critical hit effect.
+			InstantiatePackedEffect(vfx_crit, vfx_crit_location.Position, withRandomRotation: true, randomPositionLimit: 3.0f);
+			
+			// And do extra damage.
+			var damage = (int)area.Get("damage") * CriticalDamage;
+			SetHP(HP - (int)damage);
+		}
 		
+		// Apply Pushback
 		ApplyPushback((float)area.Get("pushback"));
 
-		// Todo;
-		// 1. Hurt Animation
-		// 2. Screen Shake Effect
-		// 3. Hurt Particle Effects
-		// 4. Hurt Sounds
-		// 5. Add Posture
+		// Play Sound
+		sfx_hurt.OverlappingPlay();
 	}
 
-	private void HandleGuardboxInteraction(Area2D area) {
-		if(area is not Hitbox)
+	protected void HandleGuardboxInteraction(Area2D area) {
+		if(area is not Hitbox || dead || interacted.Contains(area))
 			return;
+
+		interacted.Add(area);
 
 		// Prevent Posture Regenration if Just Blocked.
 		can_regenerate_posture = false;
@@ -359,15 +401,22 @@ public partial class Player : CharacterBody2D
 					Posture = MaxPosture - 1;
 
 				// Parry Animation
-				animationState.Travel("Parry");
+				animationState.Start("Parry");
+
+				// Add posture damage to the attacker.
+				// Needs to be cleaned up, MVP.
+				area.GetParent().GetParent<Player>().AddPosture((float)area.Get("posture_damage"));
 			}
 
 			// Pushback with Parry Modifier
 			ApplyPushback((float)area.Get("pushback") * ParryPushback);
 
 			// Sound
-			sfx_parry.PitchScale = GD.Randf() % 1.02f + 0.98f;
+			// sfx_parry.PitchScale = GD.Randf() % 1.02f + 0.98f;
 			sfx_parry.OverlappingPlay();
+
+			// Instantiate the parry effect.
+			InstantiatePackedEffect(vfx_parry, vfx_parry_location.Position, withRandomRotation: true, randomPositionLimit: 5.0f);
 
 		} else { // In case of a Block
 		
@@ -387,7 +436,7 @@ public partial class Player : CharacterBody2D
 					Posture = MaxPosture;
 				
 				// Block Animation
-				animationState.Travel("Block");
+				animationState.Start("Block");
 			}
 
 			// Pushback with Guard Modifier
@@ -399,7 +448,7 @@ public partial class Player : CharacterBody2D
 		}
 	}
 
-	private void ApplyPushback(float pushback) {
+	protected void ApplyPushback(float pushback) {
 		// Pushback
 		Vector2 velocity = Vector2.Zero;
 		// Lerp Velocity using the MotionLerpWeight and Delta. This will smoothly increase / decrease the velocity and imitate acceleration without actually using acceleration.
@@ -408,7 +457,7 @@ public partial class Player : CharacterBody2D
 		MoveAndSlide();
 	}
 
-	private void AutomaticMovement(float speed, double delta) {
+	protected void AutomaticMovement(float speed, double delta) {
 		// Create a copy of the global Velocity vector.
 		Vector2 velocity = Velocity;
 		// Lerp Velocity using the MotionLerpWeight and Delta. This will smoothly increase / decrease the velocity and imitate acceleration without actually using acceleration.
@@ -417,7 +466,7 @@ public partial class Player : CharacterBody2D
 		MoveAndSlide();
 	}
 
-	private async void SetHP(int hp) {
+	protected async void SetHP(int hp) {
 		if(dead)
 			return;
 
@@ -440,9 +489,10 @@ public partial class Player : CharacterBody2D
 			death_sprite.Play();
 
 			// Instantiate the death effect.
-			SimpleEffect effect = vfx_death.Instantiate<SimpleEffect>();
-			effect.Position = vfx_death_location.Position;
-			AddChild(effect);
+			InstantiatePackedEffect(vfx_death, vfx_death_location.Position);
+
+			// Play death sound
+			sfx_death.Play();
 
 			await ToSignal(death_sprite, "animation_finished");
 
@@ -452,36 +502,60 @@ public partial class Player : CharacterBody2D
 		}
 	}
 
+	protected void InstantiatePackedEffect(PackedScene packedEffect, Vector2 position, bool withRandomRotation = false, float randomPositionLimit = 0.0f) {
+		SimpleEffect effect = packedEffect.Instantiate<SimpleEffect>();
+
+		if(withRandomRotation) {
+			effect.Rotate(Mathf.DegToRad(GD.Randi() % 180));
+		}
+
+		var rand_x = GD.Randf() * randomPositionLimit;
+		var rand_y = GD.Randf() * randomPositionLimit;
+
+		effect.Position = new Vector2(position.X + rand_x, position.Y + rand_y);
+		
+		AddChild(effect);
+		
+	}
+
+	public void AddPosture(float posture) {
+		Posture += posture;
+		if(Posture >= MaxPosture)
+			Posture = MaxPosture;
+	}
+
 	// Check if Hitboxes are disabled. An alternative to checking if player is attacking or not.
-	// Helpful if you want to give-back control 1-2 frames earlier than the attack animation finishes.
-	bool HitboxDisabled() {
-		return !hitbox.Monitoring;
+	// Helpful if you want to give-back control 1-2 frames earlier before the attack animation finishes.
+	protected bool HitboxDisabled() {
+		return !hitbox.Monitoring && !hitbox.Monitorable;
 	}
 
-	bool IsGuarding() {
-		return guardbox.Monitoring;
+	protected bool IsGuarding() {
+		return guardbox.Monitoring && guardbox.Monitorable;
 	}
 
-	bool IsAttacking() {
+	protected bool IsAttacking() {
 		return animationState.GetCurrentNode().ToString().StartsWith("Attack");
 	}
 
-	bool IsHurt() {
+	protected bool IsHurt() {
 		return animationState.GetCurrentNode() == "Hurt";
 	}
 
-	bool IsRolling() {
+	protected bool IsRolling() {
 		return animationState.GetCurrentNode() == "Roll";
 	}
 
-	// Method to check whether a roll should be allowed or not.
-	bool CanRoll() {
+	protected bool CanAttack() {
+		return !IsHurt() && !staggered && !dead;
+	}
+
+	protected bool CanRoll() {
 		return !IsHurt() && HitboxDisabled() && !IsRolling() && !staggered && !dead;
 	}
 
-	// Method to check whether all the conditions for movement are met.
-	bool CanMove() {
-		return HitboxDisabled() && !IsGuarding() && !IsHurt() && !IsRolling() && !staggered && !dead;
+	protected bool CanMove() {
+		return !IsAttacking() && !IsGuarding() && !IsHurt() && !IsRolling() && !staggered && !dead;
 	}
 	
 	// Play footstep sound with a random pitch.
@@ -493,24 +567,38 @@ public partial class Player : CharacterBody2D
 	// Activate the Attack Hitbox.
 	public void ActivateHitbox() {
 		hitbox.Monitoring = true;
+		hitbox.Monitorable = true;
 		can_regenerate_posture = false;
 	}
 
 	// Deactivate the Attack Hitbox.
 	public void DeactivateHitbox() {
 		hitbox.Monitoring = false;
+		hitbox.Monitorable = false;
 		ResetAnimationSpeedScale();
 		postureRegenDelayTimer.Start();
 	}
 
-	// Deactivate Hurtbox
-	public void DeactivateHurtbox() {
-		hurtbox.Monitoring = true;
+	public void ActivateGuardbox() {
+		guardbox.Monitoring = true;
+		guardbox.Monitorable = true;
 	}
 
-	// Activate Hurtbox
-	public void ActivateHurtbox() {
+	public void DeactivateGuardbox() {
+		guardbox.Monitoring = false;
+		guardbox.Monitorable = false;
+	}
+
+	// Deactivate Hurtbox; Damage will not be taken when deactivated.
+	public void DeactivateHurtbox() {
 		hurtbox.Monitoring = false;
+		hurtbox.Monitorable = false;
+	}
+
+	// Activate Hurtbox; Damage can be taken.
+	public void ActivateHurtbox() {
+		hurtbox.Monitoring = true;
+		hurtbox.Monitorable = true;
 	}
 
 	// Allows the changing of attack speed. Potentially useful with an upgrade system that will improve the attack speed.

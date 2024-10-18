@@ -1,29 +1,33 @@
-[gd_scene load_steps=76 format=3 uid="uid://e0l0tqa3lnrj"]
+[gd_scene load_steps=83 format=3 uid="uid://nvpjlanvxum3"]
 
-[ext_resource type="Script" path="res://Entities/Player/Player.cs" id="1_cbusj"]
-[ext_resource type="Shader" path="res://Entities/Player/Flash.gdshader" id="2_gjxqv"]
-[ext_resource type="Texture2D" uid="uid://0r67fwh0ccdg" path="res://Assets/Character/Color-1/Spritesheet.png" id="2_t2630"]
-[ext_resource type="Script" path="res://Entities/Hitbox.cs" id="3_4ilfk"]
-[ext_resource type="AudioStream" uid="uid://ddg8iifvipr4u" path="res://Assets/Character/footstep.ogg" id="3_aqyf5"]
-[ext_resource type="AudioStream" uid="uid://bhemg7pwwwgoh" path="res://Assets/Character/attack_1.ogg" id="3_txwnb"]
-[ext_resource type="AudioStream" uid="uid://8rjl4q2iru2r" path="res://Assets/Character/attack_2.ogg" id="4_s0plk"]
-[ext_resource type="AudioStream" uid="uid://do723keguj2gs" path="res://Assets/Character/guard_up.ogg" id="6_4bo3y"]
-[ext_resource type="AudioStream" uid="uid://cfxccn1372w57" path="res://Assets/Character/block.ogg" id="7_q13jd"]
-[ext_resource type="Texture2D" uid="uid://chtsorcllatd7" path="res://Assets/HUD/Bars/base.png" id="8_ch2np"]
-[ext_resource type="PackedScene" uid="uid://boyuypxsjcewx" path="res://Entities/UI/AnimatedProgressBar.tscn" id="8_e3u6s"]
-[ext_resource type="Texture2D" uid="uid://tpifdfndl2ts" path="res://Assets/HUD/Bars/yellow.png" id="9_0sxpu"]
-[ext_resource type="Texture2D" uid="uid://d30xhu778m0de" path="res://Assets/HUD/Bars/red.png" id="9_ptaxj"]
-[ext_resource type="Texture2D" uid="uid://dbybdam5vluur" path="res://Assets/HUD/Bars/green.png" id="11_40led"]
-[ext_resource type="AudioStream" uid="uid://dbf7ylsdppcml" path="res://Assets/Character/parry_3.mp3" id="13_0xuhq"]
-[ext_resource type="Script" path="res://Entities/OverlappingAudio.cs" id="13_42k4d"]
+[ext_resource type="Script" path="res://Game Objects/Enemy/Enemy.cs" id="1_uhdox"]
+[ext_resource type="Shader" path="res://Game Objects/Other/Flash.gdshader" id="2_o4v02"]
+[ext_resource type="Texture2D" uid="uid://0r67fwh0ccdg" path="res://Assets/Character/Sprites/Spritesheet.png" id="3_6e8tg"]
+[ext_resource type="Script" path="res://Game Objects/Hitbox.cs" id="4_awycu"]
+[ext_resource type="AudioStream" uid="uid://bhemg7pwwwgoh" path="res://Assets/Character/Sounds/attack_1.ogg" id="5_i1tlt"]
+[ext_resource type="AudioStream" uid="uid://8rjl4q2iru2r" path="res://Assets/Character/Sounds/attack_2.ogg" id="6_m7iqr"]
+[ext_resource type="AudioStream" uid="uid://ddg8iifvipr4u" path="res://Assets/Character/Sounds/footstep.ogg" id="7_5i1xp"]
+[ext_resource type="AudioStream" uid="uid://do723keguj2gs" path="res://Assets/Character/Sounds/guard_up.ogg" id="8_pjysy"]
+[ext_resource type="AudioStream" uid="uid://cg1opandr3qtl" path="res://Assets/Character/Sounds/hurt_1.mp3" id="9_djq26"]
+[ext_resource type="AudioStream" uid="uid://don0mu2qsm8e6" path="res://Assets/Character/Sounds/hurt_2.mp3" id="10_epvcm"]
+[ext_resource type="AudioStream" uid="uid://b1sre2tt5krxp" path="res://Assets/Character/Sounds/hurt_3.mp3" id="11_a1jwj"]
+[ext_resource type="Script" path="res://Game Objects/OverlappingAudio.cs" id="12_vof3d"]
+[ext_resource type="AudioStream" uid="uid://cfxccn1372w57" path="res://Assets/Character/Sounds/block.ogg" id="13_b8cfu"]
+[ext_resource type="AudioStream" uid="uid://dxmx47eovqvsv" path="res://Assets/Character/Sounds/parry.mp3" id="14_exl0l"]
+[ext_resource type="AudioStream" uid="uid://bhyv0wjyen1bi" path="res://Assets/Character/Sounds/death.mp3" id="15_vyrty"]
+[ext_resource type="PackedScene" uid="uid://boyuypxsjcewx" path="res://Game Objects/UI/AnimatedProgressBar.tscn" id="16_x6uyd"]
+[ext_resource type="Texture2D" uid="uid://d30xhu778m0de" path="res://Assets/HUD/Bars/red.png" id="17_m0y20"]
+[ext_resource type="Texture2D" uid="uid://chtsorcllatd7" path="res://Assets/HUD/Bars/base.png" id="18_ngtlg"]
+[ext_resource type="Texture2D" uid="uid://tpifdfndl2ts" path="res://Assets/HUD/Bars/yellow.png" id="19_f0k3o"]
+[ext_resource type="Texture2D" uid="uid://dbybdam5vluur" path="res://Assets/HUD/Bars/green.png" id="20_hkgrx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_chagq"]
-shader = ExtResource("2_gjxqv")
+shader = ExtResource("2_o4v02")
 shader_parameter/guard_active = false
 shader_parameter/parry_active = false
 shader_parameter/hurt_active = false
 shader_parameter/guard_color = Color(1, 1, 1, 1)
-shader_parameter/parry_color = Color(1, 1, 1, 1)
+shader_parameter/parry_color = Color(0.337255, 0.486275, 1, 1)
 shader_parameter/hurt_color = Color(1, 1, 1, 1)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_gl28s"]
@@ -37,18 +41,21 @@ height = 46.0
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3g06b"]
 height = 38.0
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h3wyn"]
+size = Vector2(248, 20)
+
 [sub_resource type="Animation" id="Animation_6i3pa"]
 resource_name = "Attack_1"
-length = 0.375006
+length = 0.562506
 step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.0625, 0.125, 0.1875, 0.25, 0.3125),
+"times": PackedFloat32Array(0, 0.25, 0.3125, 0.375, 0.4375, 0.5),
 "transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1),
 "update": 1,
 "values": [2, 3, 4, 5, 6, 7]
@@ -56,14 +63,14 @@ tracks/0/keys = {
 tracks/1/type = "audio"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Audio/Attacks")
+tracks/1/path = NodePath("Enemy/Audio/Attacks")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "clips": [{
 "end_offset": 0.0,
 "start_offset": 0.0,
-"stream": ExtResource("3_txwnb")
+"stream": ExtResource("5_i1tlt")
 }],
 "times": PackedFloat32Array(0.0625)
 }
@@ -71,11 +78,11 @@ tracks/1/use_blend = true
 tracks/2/type = "method"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Player")
+tracks/2/path = NodePath("Enemy")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.125, 0.3125),
+"times": PackedFloat32Array(0.3125, 0.375),
 "transitions": PackedFloat32Array(1, 1),
 "values": [{
 "args": [],
@@ -93,7 +100,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -105,14 +112,14 @@ tracks/0/keys = {
 tracks/1/type = "audio"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Audio/Attacks")
+tracks/1/path = NodePath("Enemy/Audio/Attacks")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
 "clips": [{
 "end_offset": 0.351832,
 "start_offset": 0.0,
-"stream": ExtResource("4_s0plk")
+"stream": ExtResource("6_m7iqr")
 }],
 "times": PackedFloat32Array(0)
 }
@@ -120,11 +127,11 @@ tracks/1/use_blend = true
 tracks/2/type = "method"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Player")
+tracks/2/path = NodePath("Enemy")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0, 0.1875),
+"times": PackedFloat32Array(0.0625, 0.125),
 "transitions": PackedFloat32Array(1, 1),
 "values": [{
 "args": [],
@@ -142,7 +149,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -154,7 +161,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/guard_active")
+tracks/1/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/guard_active")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -171,7 +178,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -188,7 +195,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -200,7 +207,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/hurt_active")
+tracks/1/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/hurt_active")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -218,7 +225,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -235,7 +242,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -247,7 +254,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/parry_active")
+tracks/1/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/parry_active")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -262,7 +269,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -274,7 +281,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/parry_active")
+tracks/1/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/parry_active")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -286,7 +293,7 @@ tracks/1/keys = {
 tracks/2/type = "value"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/guard_active")
+tracks/2/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/guard_active")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
@@ -298,7 +305,7 @@ tracks/2/keys = {
 tracks/3/type = "value"
 tracks/3/imported = false
 tracks/3/enabled = true
-tracks/3/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/hurt_active")
+tracks/3/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/hurt_active")
 tracks/3/interp = 1
 tracks/3/loop_wrap = true
 tracks/3/keys = {
@@ -315,7 +322,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -327,7 +334,7 @@ tracks/0/keys = {
 tracks/1/type = "method"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player")
+tracks/1/path = NodePath("Enemy")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -350,7 +357,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -362,7 +369,7 @@ tracks/0/keys = {
 tracks/1/type = "method"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player")
+tracks/1/path = NodePath("Enemy")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -377,23 +384,6 @@ tracks/1/keys = {
 }]
 }
 
-[sub_resource type="Animation" id="Animation_w0q3o"]
-resource_name = "TurnAround"
-length = 0.187506
-step = 0.0625
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.0625, 0.125),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 1,
-"values": [72, 73, 74]
-}
-
 [sub_resource type="Animation" id="Animation_d5v7q"]
 resource_name = "Stagger"
 length = 0.312506
@@ -401,7 +391,7 @@ step = 0.0625
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("Player/Pivot/Sprite2D:frame")
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -413,7 +403,7 @@ tracks/0/keys = {
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("Player/Pivot/Sprite2D:material:shader_parameter/hurt_active")
+tracks/1/path = NodePath("Enemy/Pivot/Sprite2D:material:shader_parameter/hurt_active")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
@@ -421,6 +411,23 @@ tracks/1/keys = {
 "transitions": PackedFloat32Array(1, 1),
 "update": 1,
 "values": [true, false]
+}
+
+[sub_resource type="Animation" id="Animation_w0q3o"]
+resource_name = "TurnAround"
+length = 0.187506
+step = 0.0625
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Enemy/Pivot/Sprite2D:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0625, 0.125),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [72, 73, 74]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ys5f4"]
@@ -569,6 +576,8 @@ switch_mode = 2
 
 [sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_tos1s"]
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_l1apg"]
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_xj31u"]
 states/Attack_1/node = SubResource("AnimationNodeBlendTree_uu2qf")
 states/Attack_1/position = Vector2(428, 254)
@@ -580,7 +589,7 @@ states/End/position = Vector2(1026, 100)
 states/Guard/node = SubResource("AnimationNodeAnimation_2y185")
 states/Guard/position = Vector2(428, -103)
 states/Hurt/node = SubResource("AnimationNodeAnimation_cgvb8")
-states/Hurt/position = Vector2(313, 207)
+states/Hurt/position = Vector2(235, 210)
 states/Idle/node = SubResource("AnimationNodeAnimation_rc7yf")
 states/Idle/position = Vector2(428, 100)
 states/Parry/node = SubResource("AnimationNodeAnimation_nlbw1")
@@ -590,38 +599,48 @@ states/Roll/position = Vector2(531, 6)
 states/Run/node = SubResource("AnimationNodeBlendTree_wofhg")
 states/Run/position = Vector2(753, 100)
 states/Stagger/node = SubResource("AnimationNodeAnimation_x1gpv")
-states/Stagger/position = Vector2(313, 6)
+states/Stagger/position = Vector2(235, 0)
 states/Start/position = Vector2(235, 100)
 states/TurnAround/node = SubResource("AnimationNodeAnimation_ovuuw")
 states/TurnAround/position = Vector2(904, 100)
-transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_0yjv3"), "Idle", "Run", SubResource("AnimationNodeStateMachineTransition_5su0r"), "Run", "Idle", SubResource("AnimationNodeStateMachineTransition_862ht"), "Idle", "Attack_1", SubResource("AnimationNodeStateMachineTransition_8gjot"), "Attack_1", "Idle", SubResource("AnimationNodeStateMachineTransition_uwfmg"), "Idle", "Attack_2", SubResource("AnimationNodeStateMachineTransition_aoued"), "Attack_1", "Attack_2", SubResource("AnimationNodeStateMachineTransition_t11xx"), "Attack_2", "Idle", SubResource("AnimationNodeStateMachineTransition_hlhwr"), "Idle", "Guard", SubResource("AnimationNodeStateMachineTransition_erny8"), "Guard", "Idle", SubResource("AnimationNodeStateMachineTransition_mhiwj"), "Guard", "Parry", SubResource("AnimationNodeStateMachineTransition_a60l5"), "Parry", "Guard", SubResource("AnimationNodeStateMachineTransition_6opnt"), "Guard", "Block", SubResource("AnimationNodeStateMachineTransition_v75wu"), "Block", "Guard", SubResource("AnimationNodeStateMachineTransition_xow3s"), "Idle", "Hurt", SubResource("AnimationNodeStateMachineTransition_81x0g"), "Hurt", "Idle", SubResource("AnimationNodeStateMachineTransition_djjns"), "Idle", "Roll", SubResource("AnimationNodeStateMachineTransition_vr3d1"), "Roll", "Idle", SubResource("AnimationNodeStateMachineTransition_k6cpe"), "Run", "TurnAround", SubResource("AnimationNodeStateMachineTransition_ipo13"), "TurnAround", "Run", SubResource("AnimationNodeStateMachineTransition_a0wrm"), "Idle", "Stagger", SubResource("AnimationNodeStateMachineTransition_8i58e"), "Stagger", "Idle", SubResource("AnimationNodeStateMachineTransition_y2gr4"), "Start", "Stagger", SubResource("AnimationNodeStateMachineTransition_tos1s")]
-graph_offset = Vector2(-64, -103)
+transitions = ["Start", "Idle", SubResource("AnimationNodeStateMachineTransition_0yjv3"), "Idle", "Run", SubResource("AnimationNodeStateMachineTransition_5su0r"), "Run", "Idle", SubResource("AnimationNodeStateMachineTransition_862ht"), "Idle", "Attack_1", SubResource("AnimationNodeStateMachineTransition_8gjot"), "Attack_1", "Idle", SubResource("AnimationNodeStateMachineTransition_uwfmg"), "Idle", "Attack_2", SubResource("AnimationNodeStateMachineTransition_aoued"), "Attack_1", "Attack_2", SubResource("AnimationNodeStateMachineTransition_t11xx"), "Attack_2", "Idle", SubResource("AnimationNodeStateMachineTransition_hlhwr"), "Idle", "Guard", SubResource("AnimationNodeStateMachineTransition_erny8"), "Guard", "Idle", SubResource("AnimationNodeStateMachineTransition_mhiwj"), "Guard", "Parry", SubResource("AnimationNodeStateMachineTransition_a60l5"), "Parry", "Guard", SubResource("AnimationNodeStateMachineTransition_6opnt"), "Guard", "Block", SubResource("AnimationNodeStateMachineTransition_v75wu"), "Block", "Guard", SubResource("AnimationNodeStateMachineTransition_xow3s"), "Idle", "Hurt", SubResource("AnimationNodeStateMachineTransition_81x0g"), "Hurt", "Idle", SubResource("AnimationNodeStateMachineTransition_djjns"), "Idle", "Roll", SubResource("AnimationNodeStateMachineTransition_vr3d1"), "Roll", "Idle", SubResource("AnimationNodeStateMachineTransition_k6cpe"), "Run", "TurnAround", SubResource("AnimationNodeStateMachineTransition_ipo13"), "TurnAround", "Run", SubResource("AnimationNodeStateMachineTransition_a0wrm"), "Idle", "Stagger", SubResource("AnimationNodeStateMachineTransition_8i58e"), "Stagger", "Idle", SubResource("AnimationNodeStateMachineTransition_y2gr4"), "Start", "Stagger", SubResource("AnimationNodeStateMachineTransition_tos1s"), "Start", "Hurt", SubResource("AnimationNodeStateMachineTransition_l1apg")]
+graph_offset = Vector2(-109, 36)
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_oml2f"]
 height = 38.0
 
-[node name="Player" type="CharacterBody2D"]
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_3f7wd"]
+streams_count = 3
+stream_0/stream = ExtResource("9_djq26")
+stream_1/stream = ExtResource("10_epvcm")
+stream_2/stream = ExtResource("11_a1jwj")
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 30
 platform_floor_layers = 4294901772
 platform_wall_layers = 12
-script = ExtResource("1_cbusj")
-GuardRegenBuff = 0.2
-MotionLerpWeight = 14.0
+script = ExtResource("1_uhdox")
+MaxHP = 450
+HP = 450
+ParryFrames = 8
+AttackSpeedScale = 0.75
+MaxPosture = 75
 
 [node name="Pivot" type="Node2D" parent="."]
 
 [node name="Sprite2D" type="Sprite2D" parent="Pivot"]
 material = SubResource("ShaderMaterial_chagq")
 position = Vector2(0, -40)
-texture = ExtResource("2_t2630")
+texture = ExtResource("3_6e8tg")
 hframes = 12
 vframes = 7
-frame = 10
+frame = 28
 
 [node name="Hitbox" type="Area2D" parent="Pivot"]
-collision_layer = 0
-collision_mask = 2
+collision_layer = 2
 monitoring = false
-script = ExtResource("3_4ilfk")
+script = ExtResource("4_awycu")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/Hitbox"]
 position = Vector2(20, -20)
@@ -631,8 +650,7 @@ debug_color = Color(0.997495, 0, 0.161284, 0.14902)
 
 [node name="Guardbox" type="Area2D" parent="Pivot"]
 position = Vector2(8, -8)
-collision_layer = 0
-collision_mask = 2
+collision_layer = 2
 monitoring = false
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/Guardbox"]
@@ -641,17 +659,34 @@ shape = SubResource("CapsuleShape2D_y67qg")
 debug_color = Color(0, 0.611475, 0.481224, 0.0980392)
 
 [node name="Hurtbox" type="Area2D" parent="Pivot"]
-collision_layer = 0
-collision_mask = 2
+collision_layer = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/Hurtbox"]
 position = Vector2(-5, -19)
 shape = SubResource("CapsuleShape2D_3g06b")
 
+[node name="DetectionBox" type="Area2D" parent="Pivot"]
+collision_layer = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Pivot/DetectionBox"]
+position = Vector2(68, -16)
+shape = SubResource("RectangleShape2D_h3wyn")
+debug_color = Color(0.703587, 0.271751, 1, 0.42)
+
+[node name="ProximityDetection" type="RayCast2D" parent="Pivot"]
+position = Vector2(0, -16)
+target_position = Vector2(32, 0)
+
 [node name="EffectLocations" type="Node2D" parent="Pivot"]
 
 [node name="Death" type="Node2D" parent="Pivot/EffectLocations"]
 position = Vector2(-5, -19)
+
+[node name="Parry" type="Node2D" parent="Pivot/EffectLocations"]
+position = Vector2(8, -27)
+
+[node name="Critical" type="Node2D" parent="Pivot/EffectLocations"]
+position = Vector2(-1, -10)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 root_node = NodePath("../..")
@@ -674,7 +709,7 @@ shape = SubResource("CapsuleShape2D_oml2f")
 [node name="Audio" type="Node2D" parent="."]
 
 [node name="Footsteps" type="AudioStreamPlayer2D" parent="Audio"]
-stream = ExtResource("3_aqyf5")
+stream = ExtResource("7_5i1xp")
 volume_db = -5.0
 max_polyphony = 2
 bus = &"SFX"
@@ -684,46 +719,65 @@ max_polyphony = 3
 bus = &"SFX"
 
 [node name="Guardup" type="AudioStreamPlayer2D" parent="Audio"]
-stream = ExtResource("6_4bo3y")
+stream = ExtResource("8_pjysy")
 bus = &"SFX"
+
+[node name="Hurt" type="AudioStreamPlayer2D" parent="Audio"]
+stream = SubResource("AudioStreamRandomizer_3f7wd")
+bus = &"SFX"
+script = ExtResource("12_vof3d")
 
 [node name="Block" type="AudioStreamPlayer2D" parent="Audio"]
-stream = ExtResource("7_q13jd")
+stream = ExtResource("13_b8cfu")
 bus = &"SFX"
-script = ExtResource("13_42k4d")
+script = ExtResource("12_vof3d")
 
 [node name="Parry" type="AudioStreamPlayer2D" parent="Audio"]
-stream = ExtResource("13_0xuhq")
+stream = ExtResource("14_exl0l")
 bus = &"SFX"
-script = ExtResource("13_42k4d")
+script = ExtResource("12_vof3d")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="Death" type="AudioStreamPlayer2D" parent="Audio"]
+stream = ExtResource("15_vyrty")
+volume_db = -5.0
+max_polyphony = 2
+bus = &"SFX"
 
-[node name="HP" parent="HUD" instance=ExtResource("8_e3u6s")]
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -50.0
+offset_top = -80.0
+offset_right = -10.0
+offset_bottom = -40.0
+
+[node name="HP" parent="HUD" instance=ExtResource("16_x6uyd")]
 offset_left = 16.0
 offset_top = 16.0
 offset_right = 56.0
 offset_bottom = 56.0
-FillTexture = ExtResource("9_ptaxj")
+FillTexture = ExtResource("17_m0y20")
 
 [node name="Posture" type="TextureProgressBar" parent="HUD"]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 24.0
 offset_right = 74.0
 offset_bottom = 64.0
 value = 100.0
 fill_mode = 6
-texture_under = ExtResource("8_ch2np")
-texture_progress = ExtResource("9_0sxpu")
+texture_under = ExtResource("18_ngtlg")
+texture_progress = ExtResource("19_f0k3o")
 texture_progress_offset = Vector2(1, 1)
 
 [node name="ParryTiming" type="TextureProgressBar" parent="HUD"]
+layout_mode = 0
 offset_left = 16.0
 offset_top = 32.0
 offset_right = 74.0
 offset_bottom = 72.0
-texture_under = ExtResource("8_ch2np")
-texture_progress = ExtResource("11_40led")
+texture_under = ExtResource("18_ngtlg")
+texture_progress = ExtResource("20_hkgrx")
 texture_progress_offset = Vector2(1, 1)
 
 [node name="PostureRegenDelay" type="Timer" parent="."]
@@ -731,3 +785,6 @@ one_shot = true
 
 [node name="StaggerDuration" type="Timer" parent="."]
 one_shot = true
+
+[node name="AttackCooldown" type="Timer" parent="."]
+wait_time = 2.5
